@@ -8,7 +8,7 @@ import (
 	"incentiveblog/utils"
 	"strconv"
 
-	"github.com/gorilla/sessions"
+	_ "github.com/gorilla/sessions"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo-contrib/session"
 	"gopkg.in/mgo.v2/bson"
@@ -29,6 +29,8 @@ func Register(c echo.Context) error {
 		return err
 	}
 
+	user.Token = utils.MakeToken([]byte(user.UserID), []byte(user.UserName))
+	user.Points = 100
 	//3. 操作mongodb
 	err := db.Dbconn.Insert("blogplatform", "users", user)
 	if err != nil {
@@ -37,15 +39,15 @@ func Register(c echo.Context) error {
 	}
 
 	//4. session处理
-	sess, _ := session.Get("session", c)
-	sess.Options = &sessions.Options{
-		Path:     "/",
-		MaxAge:   86400 * 7,
-		HttpOnly: true,
-	}
-	sess.Values["userid"] = user.UserID
-	sess.Values["username"] = user.UserName
-	sess.Save(c.Request(), c.Response())
+	//	sess, _ := session.Get("session", c)
+	//	sess.Options = &sessions.Options{
+	//		Path:     "/",
+	//		MaxAge:   86400 * 7,
+	//		HttpOnly: true,
+	//	}
+	//	sess.Values["userid"] = user.UserID
+	//	sess.Values["username"] = user.UserName
+	//	sess.Save(c.Request(), c.Response())
 	//5. 赠送积分
 	detail := PointDetails{user.UserID, "register", 100}
 	err = db.Dbconn.Insert("blogplatform", "details", detail)
@@ -54,6 +56,7 @@ func Register(c echo.Context) error {
 		resp.Errno = utils.RECODE_DBERR
 		return err
 	}
+	resp.Data = user.Token
 	return nil
 }
 
@@ -69,13 +72,44 @@ func GetSession(c echo.Context) error {
 		resp.Errno = utils.RECODE_SESSIONERR
 		return err
 	}
-	address := sess.Values["username"]
-	if address == nil {
-		fmt.Println("failed to get session,address is nil")
+	userid := sess.Values["userid"]
+	if userid == nil {
+		fmt.Println("failed to get session,userid is nil")
 		resp.Errno = utils.RECODE_SESSIONERR
 		return err
 	}
-	resp.Data = address
+	user := &db.User{}
+	err = db.Dbconn.QueryOne("blogplatform", "users", bson.M{"userid": userid}, &user)
+
+	if err != nil {
+		fmt.Println("failed to login", err)
+		resp.Errno = utils.RECODE_LOGINERR
+		return err
+	}
+	resp.Data = user
+	return nil
+}
+
+func CheckLogin(c echo.Context) error {
+	var resp utils.Resp
+	resp.Errno = utils.RECODE_OK
+	defer utils.ResponseData(c, &resp)
+	//处理session
+	user := &db.User{}
+	if err := c.Bind(user); err != nil {
+		fmt.Println(user)
+		resp.Errno = utils.RECODE_PARAMERR
+		return err
+	}
+
+	err := db.Dbconn.QueryOne("blogplatform", "users", bson.M{"token": user.Token}, &user)
+
+	if err != nil {
+		fmt.Println("failed to login", err)
+		resp.Errno = utils.RECODE_LOGINERR
+		return err
+	}
+	resp.Data = user
 	return nil
 }
 
@@ -97,7 +131,17 @@ func Login(c echo.Context) error {
 	fmt.Println("-----------------------", user)
 	//3. 查看mongodb
 	//db.users.find({"userid":"yekai","password":"123"})
-	err := db.Dbconn.QueryOne("blogplatform", "users", bson.M{"userid": user.UserID, "password": user.PassWord}, nil)
+	err := db.Dbconn.QueryOne("blogplatform", "users", bson.M{"userid": user.UserID, "password": user.PassWord}, &user)
+
+	if err != nil {
+		fmt.Println("failed to login", err)
+		resp.Errno = utils.RECODE_LOGINERR
+		return err
+	}
+	user.Token = utils.MakeToken([]byte(user.UserID), []byte(user.UserName))
+
+	//更新 token Update(DBName, collection string, cond, data interface{})
+	err = db.Dbconn.Update("blogplatform", "users", bson.M{"userid": user.UserID, "password": user.PassWord}, &user)
 
 	if err != nil {
 		fmt.Println("failed to login", err)
@@ -106,15 +150,15 @@ func Login(c echo.Context) error {
 	}
 	resp.Data = user
 	//4. session处理
-	sess, _ := session.Get("session", c)
-	sess.Options = &sessions.Options{
-		Path:     "/",
-		MaxAge:   86400 * 7,
-		HttpOnly: true,
-	}
-	sess.Values["username"] = user.UserName
-	sess.Values["userid"] = user.UserID
-	sess.Save(c.Request(), c.Response())
+	//	sess, _ := session.Get("session", c)
+	//	sess.Options = &sessions.Options{
+	//		Path:     "/",
+	//		MaxAge:   86400 * 7,
+	//		HttpOnly: true,
+	//	}
+	//	sess.Values["username"] = user.UserName
+	//	sess.Values["userid"] = user.UserID
+	//	sess.Save(c.Request(), c.Response())
 	return nil
 }
 
@@ -155,18 +199,25 @@ func UploadIcon(c echo.Context) error {
 	}
 
 	//保存映射关系
-	sess, _ := session.Get("session", c)
-	userID, ok := sess.Values["userid"].(string)
-	if userID == "" || !ok {
-		resp.Errno = utils.RECODE_SESSIONERR
-		return errors.New("no session")
-	}
+	//	sess, _ := session.Get("session", c)
+	//	userID, ok := sess.Values["userid"].(string)
+	//	if userID == "" || !ok {
+	//		resp.Errno = utils.RECODE_SESSIONERR
+	//		return errors.New("no session")
+	//	}
 	//Update(DBName, collection string, cond, data interface{})
+	user := &db.User{}
+	fmt.Println(c)
+	if err := c.Bind(user); err != nil {
+		fmt.Println(user)
+		resp.Errno = utils.RECODE_PARAMERR
+		return err
+	}
 
-	err = db.Dbconn.Update("blogplatform", "users", bson.M{"userid": userID}, bson.M{"$set": bson.M{"iconurl": photoUrl}})
+	err = db.Dbconn.Update("blogplatform", "users", bson.M{"token": user.Token}, bson.M{"$set": bson.M{"iconurl": photoUrl}})
 	if err != nil {
 		resp.Errno = utils.RECODE_DBERR
-		fmt.Println("failed to update user", err, userID)
+		fmt.Println("failed to update user", err, user.Token)
 		return err
 	}
 	return nil
@@ -178,27 +229,35 @@ func Concern(c echo.Context) error {
 	resp.Errno = utils.RECODE_OK
 	defer utils.ResponseData(c, &resp)
 	//从session获取userID
-	sess, err := session.Get("session", c)
-	if err != nil {
-		fmt.Println("failed to get session", err)
-		resp.Errno = utils.RECODE_SESSIONERR
-		return err
-	}
-	userID := sess.Values["userid"]
-	if userID == nil {
-		fmt.Println("failed to get session,userID is nil")
-		resp.Errno = utils.RECODE_SESSIONERR
-		return err
-	}
-
-	//从上下文获得被关注对象
-	toUserID := c.QueryParam("touserid")
-	if toUserID == "" {
-		fmt.Println("failed to get toUserID")
+	//	sess, err := session.Get("session", c)
+	//	if err != nil {
+	//		fmt.Println("failed to get session", err)
+	//		resp.Errno = utils.RECODE_SESSIONERR
+	//		return err
+	//	}
+	//	userID := sess.Values["userid"]
+	//	if userID == nil {
+	//		fmt.Println("failed to get session,userID is nil")
+	//		resp.Errno = utils.RECODE_SESSIONERR
+	//		return err
+	//	}
+	user := &db.User{}
+	if err := c.Bind(user); err != nil {
+		fmt.Println(user)
 		resp.Errno = utils.RECODE_PARAMERR
-		return errors.New("params err")
+		return err
 	}
-	err = db.Dbconn.Insert("blogplatform", "user_relations", bson.M{"fromid": userID, "toid": toUserID})
+	toUserID := user.UserID
+	err := db.Dbconn.QueryOne("blogplatform", "users", bson.M{"token": user.Token}, &user)
+
+	if err != nil {
+		fmt.Println("failed to login", err)
+		resp.Errno = utils.RECODE_LOGINERR
+		return err
+	}
+	//从上下文获得被关注对象
+
+	err = db.Dbconn.Insert("blogplatform", "user_relations", bson.M{"fromid": user.UserID, "toid": toUserID})
 	if err != nil {
 		fmt.Println("failed to insert into  user_relations", err)
 		resp.Errno = utils.RECODE_DBERR

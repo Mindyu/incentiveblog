@@ -21,6 +21,8 @@ type User struct {
 	UserName string `json:"username"`
 	PassWord string `json:"password"`
 	IconUrl  string `json:"iconurl"`
+	Token    string `json:"token"`
+	Points   int    `json:"points"`
 }
 
 type UserRelation struct {

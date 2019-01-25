@@ -1,7 +1,12 @@
 package utils
 
 import (
+	"bytes"
+	"crypto/sha256"
+	"fmt"
 	"net/http"
+	"strconv"
+	"time"
 
 	"github.com/labstack/echo"
 )
@@ -42,4 +47,14 @@ type Resp struct {
 func ResponseData(c echo.Context, resp *Resp) {
 	resp.ErrMsg = RecodeText(resp.Errno)
 	c.JSON(http.StatusOK, resp)
+}
+
+//生成token
+func MakeToken(userID, userName []byte) string {
+	timestamp := []byte(strconv.FormatInt(time.Now().Unix(), 10))
+	fmt.Println("SetHash() ---- ", string(timestamp))
+	headers := bytes.Join([][]byte{userID, userName, timestamp}, []byte{})
+	hash := sha256.Sum256(headers)
+
+	return fmt.Sprintf("%x", hash)
 }
