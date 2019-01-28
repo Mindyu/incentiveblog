@@ -44,7 +44,6 @@ func main() {
 	e.GET("/blogs/:userid", router.ListsLimit)    // 查看博客-指定userid
 	e.POST("/blogs", router.ListsAll)             // 查看自己全部博客
 	e.GET("/concern/:userid", router.UserConcern) // 查看用户关注人数和粉丝数量
-	e.POST("/blogs", router.ListsAll)             // 查看自己全部博客
 	e.GET("/fans", router.GetFans)                // 获取粉丝列表
 	e.GET("/concerns", router.GetConcerns)        // 获取关注列表
 	e.POST("/details", router.GetDetails)         // 获取积分明细

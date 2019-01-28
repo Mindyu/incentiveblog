@@ -15,15 +15,21 @@ import (
 )
 
 type Blog struct {
-	UserID  string `json:"userid"`
-	Title   string `json:"title"`
-	BlogUrl string `json:"blogurl"`
+	UserID   string `json:"userid"`
+	Title    string `json:"title"`
+	BlogUrl  string `json:"blogurl"`
+	BlogInfo string `json:"bloginfo"`
 }
+
 type PointDetails struct {
 	UserID string `json:"userid"`
 	Remark string `json:"remark"`
 	Points int    `json:"points"`
 }
+
+//func (b *Blog) GetInfo() error {
+//	return db.Dbconn.("blogplatform", "blogs", contentHash, c)
+//}
 
 //获取图片
 func GetContent(c echo.Context) error {
@@ -64,7 +70,7 @@ func PublishBlog(c echo.Context) error {
 		return err
 	}
 
-	blog := Blog{user.UserID, title, blogUrl}
+	blog := Blog{user.UserID, title, blogUrl, content}
 	err = db.Dbconn.Insert("blogplatform", "blogs", blog)
 	if err != nil {
 		fmt.Println("failed to insert into blogs", err)

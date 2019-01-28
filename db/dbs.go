@@ -92,6 +92,23 @@ func (c *DBConnect) DownLoadFile(DBName, collection, fileName string, ec echo.Co
 	return err
 }
 
+func (c *DBConnect) GetFileText(DBName, collection, fileName string) ([]byte, error) {
+	fmt.Println("GetFileText", fileName, collection, DBName)
+	f, err := c.Sess.DB(DBName).GridFS(collection).Open(fileName)
+	if err != nil {
+		fmt.Println("failed to open gridfs file", err, fileName)
+		return nil, err
+	}
+	defer f.Close()
+	data := make([]byte, f.Size())
+	n, err := f.Read(data)
+	if err != nil || int64(n) != f.Size() {
+		fmt.Println("failed to read data", err)
+		return data, err
+	}
+	return data, nil
+}
+
 func (c *DBConnect) Count(DBName, collection string, cond interface{}) (int, error) {
 	return c.Sess.DB(DBName).C(collection).Find(cond).Count()
 }
