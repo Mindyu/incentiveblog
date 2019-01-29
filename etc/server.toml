@@ -1,0 +1,9 @@
+[httpconf]
+ip = "localhost"
+port = ":8086"
+
+[db]
+connstr = "localhost:27017"
+dbname = "blogs"
+usertab = "users"
+blogtab = "blogs"

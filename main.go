@@ -5,6 +5,7 @@ package main
 
 import (
 	"fmt"
+	_ "incentiveblog/config"
 	"net/http"
 
 	"github.com/labstack/echo"
