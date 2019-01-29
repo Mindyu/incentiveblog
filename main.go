@@ -22,6 +22,7 @@ func main() {
 
 	//加一个测试路由
 	e.GET("/ping", router.Pong)
+	e.POST("/register", router.Register)
 
 	e.Logger.Fatal(e.Start(":8086"))
 }
