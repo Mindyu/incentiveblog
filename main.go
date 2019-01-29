@@ -6,15 +6,12 @@ package main
 import (
 	"fmt"
 	_ "incentiveblog/config"
-	"net/http"
+	"incentiveblog/router"
+	_ "net/http"
 
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 )
-
-func pong(c echo.Context) error {
-	return c.String(http.StatusOK, "pong\n")
-}
 
 func main() {
 	fmt.Println("welcome to incentiveblog")
@@ -24,7 +21,7 @@ func main() {
 	e.Use(middleware.Gzip())
 
 	//加一个测试路由
-	e.GET("/ping", pong)
+	e.GET("/ping", router.Pong)
 
 	e.Logger.Fatal(e.Start(":8086"))
 }
