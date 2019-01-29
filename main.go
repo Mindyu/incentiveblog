@@ -4,9 +4,12 @@
 package main
 
 import (
+	"flag"
 	"fmt"
+	"incentiveblog/config"
 	"incentiveblog/router"
 	"net/http"
+	"os"
 
 	"github.com/gorilla/sessions"
 	"github.com/labstack/echo"
@@ -19,8 +22,15 @@ func pong(c echo.Context) error {
 }
 
 func main() {
+
 	fmt.Println("welcome to incentiveblog")
+	fmt.Println("init=====", os.Args[0], flag.Args())
+	//初始化配置文件
+
 	e := echo.New()
+
+	e.Logger.Info(config.ServConf.DBConf)
+
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	e.Use(middleware.Gzip())

@@ -1,0 +1,14 @@
+[database]
+connstr = "localhost:27017"
+dbname = "blogs"
+usertab = "users"
+blogtab = "blogs"
+
+[http]
+ip = "localhost"
+post = "8086"
+
+[version]
+auth = "yekai"
+version = "1.0.0"
+creattime = "2019-1-28"
