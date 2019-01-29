@@ -1,9 +1,9 @@
 package utils
 
 type Resp struct {
-	Errno  string `json:"errno"`
-	ErrMsg string `json:"errmsg"`
-	Data   string `json:"data"`
+	Errno  string      `json:"errno"`
+	ErrMsg string      `json:"errmsg"`
+	Data   interface{} `json:"data"`
 }
 
 //错误编码定义

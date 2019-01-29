@@ -29,3 +29,8 @@ func Insert(dbname, tabname string, data interface{}) error {
 	collect := DbConn.DB(dbname).C(tabname)
 	return collect.Insert(data)
 }
+
+func QueryOne(dbname, tabname string, cond, result interface{}) error {
+	collect := DbConn.DB(dbname).C(tabname)
+	return collect.Find(cond).One(result)
+}
