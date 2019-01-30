@@ -32,10 +32,11 @@ type HttpServer struct {
 }
 
 type Database struct {
-	Connstr string
-	DBName  string
-	UserTab string
-	BlogTab string
+	Connstr   string
+	DBName    string
+	UserTab   string
+	BlogTab   string
+	DetailTab string
 }
 
 var ServerConfig *ServerConf

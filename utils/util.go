@@ -1,5 +1,12 @@
 package utils
 
+import (
+	"bytes"
+	"crypto/sha256"
+	"fmt"
+	"time"
+)
+
 type Resp struct {
 	Errno  string      `json:"errno"`
 	ErrMsg string      `json:"errmsg"`
@@ -30,4 +37,12 @@ func GetRecodeText(code string) string {
 		return str
 	}
 	return recodeText[RECODE_UNKONWERR]
+}
+
+//生成token
+func MakeToken(orgData1, orgData2 []byte) string {
+	timestamp := []byte(fmt.Sprintf("%d", time.Now().Nanosecond()))
+	data := bytes.Join([][]byte{orgData1, orgData2, timestamp}, []byte{})
+	hash := sha256.Sum256(data)
+	return fmt.Sprintf("%x", hash)
 }

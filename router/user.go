@@ -37,6 +37,9 @@ func Register(c echo.Context) error {
 		resp.Errno = utils.RECODE_PARAMERR
 		return err
 	}
+	u.Token = utils.MakeToken([]byte(u.UserID), []byte(u.PassWord))
+	//注册送积分
+	u.Points = 100
 	//3. 操作数据库
 	err = db.Insert(config.ServerConfig.DB.DBName, config.ServerConfig.DB.UserTab, u)
 	if err != nil {
@@ -44,6 +47,15 @@ func Register(c echo.Context) error {
 		resp.Errno = utils.RECODE_DBERR
 		return err
 	}
+	// -- 维护积分明细表
+	detail := db.PointsDetail{u.UserID, "注册赠送", 100}
+	err = db.Insert(config.ServerConfig.DB.DBName, config.ServerConfig.DB.DetailTab, &detail)
+	if err != nil {
+		c.Logger().Error("failed to insert into detail", err)
+		resp.Errno = utils.RECODE_DBERR
+		return err
+	}
+	resp.Data = u.Token
 	return nil
 }
 
@@ -64,6 +76,40 @@ func Login(c echo.Context) error {
 	}
 	//3. 操作数据库 查询，匹配用户名和密码ok
 	err = db.QueryOne(config.ServerConfig.DB.DBName, config.ServerConfig.DB.UserTab, bson.M{"userid": u.UserID, "password": u.PassWord}, u)
+	if err != nil {
+		c.Logger().Error("failed to get  user", err, u.UserID)
+		resp.Errno = utils.RECODE_DBERR
+		return err
+	}
+	u.Token = utils.MakeToken([]byte(u.UserID), []byte(u.PassWord))
+	//4. 新token保存到数据库
+	err = db.Update(config.ServerConfig.DB.DBName, config.ServerConfig.DB.UserTab, bson.M{"userid": u.UserID, "password": u.PassWord}, u)
+	if err != nil {
+		c.Logger().Error("failed to update  user", err, u.UserID)
+		resp.Errno = utils.RECODE_DBERR
+		return err
+	}
+	resp.Data = u
+	return nil
+}
+
+//检测登陆
+func CheckLogin(c echo.Context) error {
+	//1. 组织响应消息
+	var resp utils.Resp
+	resp.Errno = "0"
+	defer ResponseData(c, &resp)
+	//2. 解析请求消息
+	u := new(db.User)
+
+	err := c.Bind(u)
+	if err != nil {
+		c.Logger().Error("failed to get param user", err)
+		resp.Errno = utils.RECODE_PARAMERR
+		return err
+	}
+	//3. 操作数据库 查询，匹配token
+	err = db.QueryOne(config.ServerConfig.DB.DBName, config.ServerConfig.DB.UserTab, bson.M{"token": u.Token}, u)
 	if err != nil {
 		c.Logger().Error("failed to get  user", err, u.UserID)
 		resp.Errno = utils.RECODE_DBERR
