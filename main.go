@@ -30,6 +30,8 @@ func main() {
 	e.POST("/detail", router.GetDetail)             //查看用户积分明细
 	e.POST("/blog", router.PublishBlog)             //发表博客
 	e.GET("/blog/:userid", router.GetBlogs)         //查看博客
+	e.POST("/concern", router.UserConcern)          //用户关注
+	e.GET("/concern/:userid", router.CountConcern)  //粉丝统计
 
 	e.Logger.Fatal(e.Start(":8086"))
 }
