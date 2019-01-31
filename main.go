@@ -20,6 +20,10 @@ func main() {
 	e.Use(middleware.Recover())
 	e.Use(middleware.Gzip())
 
+	//静态文件处理
+	e.Static("/", "boke")     // /index.html -- > boke/index.html
+	e.Static("/boke", "boke") // /boke/login.html -> boke/login.html
+
 	//加一个测试路由
 	e.GET("/ping", router.Pong)
 	e.POST("/register", router.Register)            //注册

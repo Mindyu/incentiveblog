@@ -101,7 +101,7 @@ func PublishBlog(c echo.Context) error {
 	contentHash := fmt.Sprintf("%x", sha256.Sum256(cData))
 	bloginfo := &db.BlogInfo{}
 	bloginfo.UserID = user.UserID
-	if clen > 100 {
+	if clen > 300 {
 		//存文件,数据库
 		err = db.UploadFile(config.ServerConfig.DB.DBName, config.ServerConfig.DB.BlogTab, contentHash, cData)
 		if err != nil {
@@ -109,7 +109,7 @@ func PublishBlog(c echo.Context) error {
 			resp.Errno = utils.RECODE_DBERR
 			return err
 		}
-		bloginfo.Text = string(cData[:100])
+		bloginfo.Text = string(cData[:300])
 		bloginfo.IsAll = false
 		bloginfo.Url = "/content/" + contentHash
 
@@ -123,6 +123,25 @@ func PublishBlog(c echo.Context) error {
 	err = db.Insert(config.ServerConfig.DB.DBName, config.ServerConfig.DB.BlogTab, bloginfo)
 	if err != nil {
 		c.Logger().Error("failed to insert into  blogs ", err, bloginfo)
+		resp.Errno = utils.RECODE_DBERR
+		return err
+	}
+	//6. 赠送积分
+	err = db.Update(config.ServerConfig.DB.DBName,
+		config.ServerConfig.DB.UserTab,
+		bson.M{"userid": bloginfo.UserID},
+		bson.M{"$inc": bson.M{"points": 10}},
+	)
+	if err != nil {
+		c.Logger().Error("failed to insert update  users ", err, bloginfo)
+		resp.Errno = utils.RECODE_DBERR
+		return err
+	}
+	//7. detail 新增
+	detail := db.PointsDetail{bloginfo.UserID, "博客发表", 10}
+	err = db.Insert(config.ServerConfig.DB.DBName, config.ServerConfig.DB.DetailTab, &detail)
+	if err != nil {
+		c.Logger().Error("failed to insert into detail", err)
 		resp.Errno = utils.RECODE_DBERR
 		return err
 	}

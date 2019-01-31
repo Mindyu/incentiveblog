@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>链教育头条系统</title>
+    <link rel="stylesheet" href="./bootstrap/css/bootstrap.css">
+</head>
+<body>
+    <style>
+          *{
+               margin: 0;
+               padding: 0;
+               list-style: none;
+          }
+          h3{
+               margin: 0;
+               padding: 0;
+          }
+          .main {
+                 width: 500px;
+                 height: 389px;
+                 border: 1px solid #ccc;
+                 margin: 100px auto;
+                 border-radius: 5px;
+          }
+          .main_top{
+                height: 40px;
+                line-height: 40px;
+                text-align: center;
+                border-bottom: 1px solid #ccc;
+          }
+          .main_top h3{
+                width: 50%;
+                float: left;
+                font-size: 18px;
+                height: 40px;
+                line-height: 40px;
+                cursor: pointer;
+          }
+          .main_top h3.active{
+                background-color: #2b669a;
+                color: #fff;
+                height: 40px;
+          }
+          .content {
+
+          }
+          .content .options{
+                margin: 0 auto;
+                margin-top: 30px;
+                width: 80%;
+          }
+          .btn-login,.btn-register {
+                padding: 10px 185px;
+          }
+    </style>
+    <div class="main">
+            <div class="main_top">
+                   <h3 class="active">登录</h3><h3>注册</h3>
+            </div>
+            <div class="content">
+                    <div class="login_con">
+                        <div class="options">
+                            <input type="text" id="login_userId" class="form-control" placeholder="登录账号">
+                        </div>
+                        <div class="options">
+                            <input type="text" id="login_password" class="form-control" placeholder="密码">
+                        </div>
+                        <div class="options">
+                            <a href="javascript:;" class="btn btn-success btn-login">登录</a>
+                        </div>
+                    </div>
+                    <div class="register_con" style="display: none">
+                        <div class="options">
+                             <input type="text" id="userId" value="yekai" class="form-control" placeholder="登录账号">
+                        </div>
+                        <div class="options">
+                            <input type="text" id="username"  value="叶开"  class="form-control" placeholder="用户名">
+                        </div>
+                        <div class="options">
+                            <input type="text" id="emailId" value="yekai@tokenpai.com" class="form-control" placeholder="邮箱">
+                        </div>
+                        <div class="options">
+                            <input type="password" id="password" value="123456" class="form-control" placeholder="密码">
+                        </div>
+                        <div class="options">
+                        <a href="javascript:;" class="btn btn-success btn-register">注册</a>
+                        </div>
+                    </div>
+            </div>
+    </div>
+    <!--jquery-->
+    <script src="./bootstrap/js/jquery.min.js"></script>
+    <script src="./bootstrap/js/bootstrap.js"></script>
+    <script>
+          $(function(){
+                //点击切换
+                $(".main .main_top h3").on("mouseenter",function(){
+                      $(this).addClass("active").siblings().removeClass("active");
+                      $(".content>div").eq($(this).index()).show().siblings().hide();
+                });
+                $(".btn-register").on("click",function(){
+
+                        $.ajax({
+                                url:"http://localhost:8086/register",
+                                type:"post",
+                                data:{
+                                     userid:$("#userId").val(),
+                                     username:$("#username").val(),
+                                     password:$("#password").val(),
+                                     email:$("#emailId").val(),
+                                },
+                                dataType:"json",
+                                success:function(data){
+                                     if(data.errno==0){
+                                          console.log(data.data);
+                                          window.localStorage.setItem("tokenId",data.data);
+                                          alert(window.location.href="注册成功");
+                                          window.location.href="./index.html";
+                                     }
+                                }
+                        });
+                });
+                $(".btn-login").on("click",function(){
+                    $.ajax({
+                          url:"http://localhost:8086/login",
+                          type:"post",
+                          data:{
+                              userid:$("#login_userId").val(),
+                              password:$("#login_password").val()
+                          },
+                          dataType:"json",
+                          success:function(data){
+                              if(data.errno==0){
+                                  console.log(data.data);
+                                  window.localStorage.setItem("tokenId",data.data.token);
+                                  alert(window.location.href="登录成功");
+                                  window.location.href="./index.html";
+                              }
+                          }
+                      });
+                });
+          });
+    </script>
+</body>
+</html>

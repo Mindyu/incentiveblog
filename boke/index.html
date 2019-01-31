@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>链教育头条系统</title>
+    <link rel="stylesheet" href="./bootstrap/css/bootstrap.css">
+</head>
+<body>
+<style>
+    *{
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        box-sizing: border-box;
+    }
+    .layout {
+        width: 1200px;
+        margin: 0 auto;
+    }
+    .layout .person_info {
+        text-align: center;
+        height: 300px;
+        background-color: #2b669a;
+    }
+    .layout .person_info img {
+        border-radius: 50%;
+        margin-top: 70px;
+        height: 150px;
+        width: 150px;
+        cursor: pointer;
+    }
+    .layout .person_info h3{
+        font-size: 18px;
+        font-weight: normal;
+        margin-top: 20px;
+        color: #fff;
+    }
+    .content {
+        margin-top: 13px;
+        border-top: 1px solid #ccc;
+    }
+    .content .left_info {
+        width: 300px;
+        float: left;
+        border: 1px solid #ccc;
+        margin-top: 20px;
+    }
+    .content .left_info .left_info_top {
+        overflow: hidden;
+    }
+    .content .left_info h3 {
+        width: 50%;
+        float: left;
+        font-size: 14px;
+        text-align: center;
+        height: 30px;
+        line-height: 30px;
+        cursor: pointer;
+    }
+    .left_info_bottom>ul {
+        padding: 5px 20px;
+    }
+    .left_info_bottom>ul li{
+        padding: 5px 40px;
+        cursor: pointer;
+        border-radius: 2px;
+        height: 40px;
+        line-height:40px;
+    }
+    .left_info_bottom>ul>li:hover{
+        background-color: #2b669a;
+        color: #fff;
+        height: 40px;
+        line-height:40px;
+    }
+    .right_info {
+        width: 850px;
+        float: left;
+        margin-top: 20px;
+        margin-left: 50px;
+    }
+    .btnsend{
+        float: right;
+    }
+    .input_style_file_upload {
+        padding: 4px 10px;
+        height: 20px;
+        line-height: 20px;
+        position: relative;
+        cursor: pointer;
+        color: #888;
+        background: #fafafa;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        overflow: hidden;
+        display: inline-block;
+        display: inline;
+        zoom: 1
+    }
+    .input_style_file_upload  input {
+        position: absolute;
+        font-size: 100px;
+        right: 0;
+        top: 0;
+        opacity: 0;
+        filter: alpha(opacity=0);
+        cursor: pointer
+    }
+    .input_style_file_upload:hover {
+        color: #444;
+        background: #eee;
+        border-color: #ccc;
+        text-decoration: none
+    }
+</style>
+<div class="layout">
+    <div class="person_info">
+        <img src="./image/logo.jpg" alt="">
+        <h3><span></span>积分 <span></span></h3>
+    </div>
+    <div class="content">
+        <div class="left_info">
+            <div class="left_info_top">
+                <h3>粉丝 <span></span></h3>
+                <h3 style="border-left: 1px solid #ccc;">关注 <span style="padding-left: 20px;"></span> </h3>
+            </div>
+            <div class="left_info_bottom">
+                <ul>
+
+                </ul>
+            </div>
+        </div>
+        <div class="right_info">
+            <a href="javascript:;" class="btn btn-info glyphicon glyphicon-edit  btnsend">发表微博</a>
+            <ul>
+
+            </ul>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="sendAtricleId" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close close_btn" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="myModalLabel" >发表微博</h4>
+            </div>
+            <div class="controller_user">
+                <div class="modal-body">
+                    <p>内容：</p>
+                    <textarea name="" id="content" cols="30" rows="10" class="form-control"></textarea>
+                </div>
+                <div class="modal-body">
+                    <a href="javascript:;" class="input_style_file_upload">
+                        选择图片
+                        <input type="file" id="input_file_imgaeId" name="content" data-url="http://localhost:8086/content">
+                    </a>
+                    <div class="imageView" ></div>
+                </div>
+                <div class="modal-body">
+                    <a href="javascript:;" class="btn btn-success btn_fabiao">发表</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--jquery-->
+<script src="./bootstrap/js/jquery.min.js"></script>
+<script src="jquery-fileupload/jquery.ui.widget.js"></script>
+<script src="jquery-fileupload/jquery.iframe-transport.js"></script>
+<script src="jquery-fileupload/jquery.fileupload.js"></script>
+<script src="./bootstrap/js/bootstrap.js"></script>
+<script>
+    var tokenId=window.localStorage.getItem("tokenId");
+    var params = {
+    };
+    if(!tokenId){
+        alert("您还没有登录！");
+        window.location.href="./login.html";
+    }
+    $(function(){
+        var pdj = {
+            init:function(){
+                this.initData();
+                this.initEvent();
+            },
+            initEvent:function(){
+                //点击粉丝，关注，切换.
+                $(".left_info_top>h3").on("click",function(){
+                    $(this).css("color","#e92322").siblings().css("color","#333");
+                    var index = $(this).index();
+                    pdj.getListData(params.userId,index);
+                });
+                //点击发表弹窗
+                $(".btnsend").on("click",function(){
+                    $("#sendAtricleId").modal();
+                });
+                //上传图片接口
+                $("#input_file_imgaeId").fileupload({
+                    autoLoad:true,
+                    done:function(e,data){ //这个回调函数文件上传完成之后会调用.
+                        //接收数据
+                        console.log(data.result.data);
+                        //$(".imageView").append("<img style='margin:5px;' width='100' src='"+data.result.data+"'>");
+						$(".imageView").append(`<img style='margin:5px;' width='100' src='`+data.result.data+`'>`);
+                    }
+                });
+                $(".btn_fabiao").on("click",function(){
+                    var title=$("#title").val();
+                    var content=$("#content").val();
+                    content+=$(".imageView").html();
+
+                    $.ajax({
+                        url:"http://localhost:8086/blog",
+                        type:"POST",
+                        data:{
+                            token:tokenId,
+                            title:title,
+                            content:content
+                        },
+                        dataType:"json",
+                        success:function(data){
+                            if(data.errno==0){
+                                $(".close_btn").click();
+                            }
+                        }
+                    })
+                });
+            },
+            initData:function(){
+                //获取个人信息。
+                this.getPersonInfo();
+            },
+            //获取个人信息.
+            getPersonInfo:function(){
+                $.ajax({
+                    url:"http://localhost:8086/checktoken",
+                    type:"POST",
+                    data:{
+                        token:tokenId
+                    },
+                    dataType:"json",
+                    success:function(data){
+                        if(data.errno==0){
+                            params.userId = data.data.userid;
+                            pdj.getConcern(params.userId);
+                            pdj.getbklist();
+                            $(".person_info h3 span:nth-child(1)").html(data.data.username);
+                            $(".person_info h3 span:last-child").html(data.data.points);
+                        }else{
+                            alert("您还没有登录");
+                            window.location.href="./login.html";
+                        }
+                    }
+                })
+            },
+            //获取粉丝以及关注的数量。
+            getConcern:function(userId){
+                $.ajax({
+                    url:"http://localhost:8086/concern/"+userId,
+                    type:"get",
+                    dataType:"json",
+                    success:function(data){
+                        console.log(data);
+                        if(data.errno==0){
+                            //关注
+                            var tocount = data.data.tocount
+                            $(".left_info_top h3:nth-child(1) span").text(tocount);
+                            //粉丝。
+                            var fromcount=data.data.fromcount;
+                            $(".left_info_top h3:nth-child(2) span").text(fromcount);
+                        }else{
+                            window.location.href="./login.html";
+                        }
+                    }
+                })
+            },
+            //点击粉丝，关注获取列表数据
+            getListData:function(userId,gType){
+                var url="";
+                if(gType==0){
+                    url="/concerns";
+                }
+                if(gType==1){
+                    url="/fans";
+                }
+                $.ajax({
+                    url:"http://localhost:8086"+url+"?userid="+userId+"&skip=1&limit=10",
+                    type:"get",
+                    dataType:"json",
+                    success:function(data){
+                        var li="";
+                        if(gType==0){
+                            for(var i=0;i<data.data.length;i++) {
+                                li+="<li>"+data.data[i].toid+"</li>";
+                            }
+                        }
+                        if(gType==1){
+                            for(var i=0;i<data.data.length;i++) {
+                                li+="<li>"+data.data[i].froid+"</li>";
+                            }
+                        }
+                        $(".left_info_bottom ul").html(li);
+                    }
+                })
+            }
+            ,
+            getbklist:function(){
+                $.ajax({
+                    url:"http://localhost:8086/blog/"+params.userId,
+                    type:"get",
+                    dataType:"json",
+                    success:function(data){
+                        var li="";
+						console.log(data)
+						var author = data.data.username;
+                        	for(var i=0;i<data.data.blogs.length;i++) {
+                            //var  title = data.data[i].title;
+                            //var  content = data.data[i].blogurl;
+						   var  content = data.data.blogs[i].text;
+                            
+                            li+="<li><h3>"+author+"</h3><p>"+content+"</p></li>";
+
+                            $(".right_info ul").html(li);
+                        	}
+                    }
+                })
+            }
+        }
+        pdj.init();
+    });
+</script>
+</body>
+</html>
