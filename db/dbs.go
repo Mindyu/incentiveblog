@@ -25,6 +25,12 @@ type PointsDetail struct {
 	Points int    `json:"points"`
 }
 
+type QueryDetail struct {
+	UserID string `json:"userid"`
+	Skip   int    `json:"skip"`
+	Limit  int    `json:"limit"`
+}
+
 var DbConn *mgo.Session
 
 func init() {
@@ -44,6 +50,12 @@ func Insert(dbname, tabname string, data interface{}) error {
 func QueryOne(dbname, tabname string, cond, result interface{}) error {
 	collect := DbConn.DB(dbname).C(tabname)
 	return collect.Find(cond).One(result)
+}
+
+//skip代表跳过记录，limit代表取记录数 skip=10,limit=10 ==> 11-20
+func QueryAll(dbname, tabname string, cond, result interface{}, skip, limit int) error {
+	collect := DbConn.DB(dbname).C(tabname)
+	return collect.Find(cond).Skip(skip).Limit(limit).All(result)
 }
 
 func Update(dbname, tabname string, cond, data interface{}) error {

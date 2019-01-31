@@ -118,3 +118,35 @@ func CheckLogin(c echo.Context) error {
 	resp.Data = u
 	return nil
 }
+
+//积分明细查询
+func GetDetail(c echo.Context) error {
+	//1. 组织响应消息
+	var resp utils.Resp
+	resp.Errno = "0"
+	defer ResponseData(c, &resp)
+	//2. 解析请求消息
+	u := new(db.QueryDetail)
+
+	err := c.Bind(u)
+	if err != nil || u.UserID == "" {
+		c.Logger().Error("failed to get param user", err, u)
+		resp.Errno = utils.RECODE_PARAMERR
+		return err
+	}
+	//3. 操作数据库 查询，匹配userID,返回一个数组
+	var details []db.PointsDetail
+	err = db.QueryAll(config.ServerConfig.DB.DBName,
+		config.ServerConfig.DB.DetailTab,
+		bson.M{"userid": u.UserID},
+		&details,
+		u.Skip,
+		u.Limit)
+	if err != nil {
+		c.Logger().Error("failed to get  details", err, u.UserID)
+		resp.Errno = utils.RECODE_DBERR
+		return err
+	}
+	resp.Data = details
+	return nil
+}

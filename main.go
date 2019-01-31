@@ -27,6 +27,7 @@ func main() {
 	e.POST("/checktoken", router.CheckLogin)        //检测登陆
 	e.POST("/content", router.UploadContent)        //上传文件
 	e.GET("/content/:hash", router.DownloadContent) //下载文件
+	e.POST("/detail", router.GetDetail)             //查看用户积分明细
 
 	e.Logger.Fatal(e.Start(":8086"))
 }
