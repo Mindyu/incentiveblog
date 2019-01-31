@@ -28,6 +28,8 @@ func main() {
 	e.POST("/content", router.UploadContent)        //上传文件
 	e.GET("/content/:hash", router.DownloadContent) //下载文件
 	e.POST("/detail", router.GetDetail)             //查看用户积分明细
+	e.POST("/blog", router.PublishBlog)             //发表博客
+	e.GET("/blog/:userid", router.GetBlogs)         //查看博客
 
 	e.Logger.Fatal(e.Start(":8086"))
 }

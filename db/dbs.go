@@ -31,6 +31,13 @@ type QueryDetail struct {
 	Limit  int    `json:"limit"`
 }
 
+type BlogInfo struct {
+	UserID string `json:"userid"`
+	Text   string `json:"text"`
+	Url    string `json:"url"`
+	IsAll  bool   `json:"isall"`
+}
+
 var DbConn *mgo.Session
 
 func init() {
