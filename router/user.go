@@ -2,9 +2,9 @@ package router
 
 import (
 	"errors"
-	"incentiveblog/config"
-	"incentiveblog/db"
-	"incentiveblog/utils"
+	"github.com/mindyu/incentiveblog/config"
+	"github.com/mindyu/incentiveblog/db"
+	"github.com/mindyu/incentiveblog/utils"
 	"net/http"
 
 	"github.com/labstack/echo"

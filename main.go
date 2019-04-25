@@ -5,10 +5,9 @@ package main
 
 import (
 	"fmt"
-	_ "incentiveblog/config"
-	"incentiveblog/router"
+	"github.com/mindyu/incentiveblog/router"
+	_ "github.com/mindyu/incentiveblog/config"
 	_ "net/http"
-
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 )

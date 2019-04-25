@@ -2,7 +2,7 @@ package db
 
 import (
 	"fmt"
-	"incentiveblog/config"
+	"github.com/mindyu/incentiveblog/config"
 	"io"
 	"os"
 

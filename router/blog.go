@@ -4,9 +4,9 @@ import (
 	"crypto/sha256"
 	"errors"
 	"fmt"
-	"incentiveblog/config"
-	"incentiveblog/db"
-	"incentiveblog/utils"
+	"github.com/mindyu/incentiveblog/config"
+	"github.com/mindyu/incentiveblog/db"
+	"github.com/mindyu/incentiveblog/utils"
 	_ "net/http"
 
 	"github.com/labstack/echo"
